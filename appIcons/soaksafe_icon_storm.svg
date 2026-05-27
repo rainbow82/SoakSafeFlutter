@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
+  <!-- Background (dark) -->
+  <rect x="0" y="0" width="240" height="240" rx="52" fill="#546E7A"/>
+  <!-- Storm clouds -->
+  <circle cx="70" cy="78" r="30" fill="#78909C"/>
+  <circle cx="104" cy="62" r="36" fill="#78909C"/>
+  <circle cx="146" cy="70" r="30" fill="#78909C"/>
+  <circle cx="176" cy="80" r="22" fill="#78909C"/>
+  <rect x="44" y="82" width="148" height="32" fill="#78909C"/>
+  <!-- Cloud face - angry -->
+  <circle cx="100" cy="70" r="7" fill="#37474F"/>
+  <circle cx="130" cy="70" r="7" fill="#37474F"/>
+  <!-- Angry brows -->
+  <path d="M92 58 Q100 52 108 58" fill="none" stroke="#37474F" stroke-width="3" stroke-linecap="round"/>
+  <path d="M122 58 Q130 52 138 58" fill="none" stroke="#37474F" stroke-width="3" stroke-linecap="round"/>
+  <!-- Grumpy mouth -->
+  <path d="M100 84 Q115 78 130 84" fill="none" stroke="#37474F" stroke-width="3" stroke-linecap="round"/>
+  <!-- Lightning bolt -->
+  <path d="M126 118 L110 140 L120 140 L104 164" fill="none" stroke="#FFD600" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Rain drops -->
+  <ellipse cx="56" cy="130" rx="3" ry="6" fill="#90CAF9" opacity="0.8"/>
+  <ellipse cx="68" cy="148" rx="3" ry="6" fill="#90CAF9" opacity="0.6"/>
+  <ellipse cx="168" cy="126" rx="3" ry="6" fill="#90CAF9" opacity="0.8"/>
+  <ellipse cx="180" cy="146" rx="3" ry="6" fill="#90CAF9" opacity="0.6"/>
+  <ellipse cx="80" cy="158" rx="3" ry="6" fill="#90CAF9" opacity="0.5"/>
+  <ellipse cx="158" cy="160" rx="3" ry="6" fill="#90CAF9" opacity="0.5"/>
+  <!-- Murky pool -->
+  <rect x="20" y="180" width="200" height="8" rx="2" fill="#455A64"/>
+  <rect x="20" y="187" width="200" height="38" rx="0" fill="#2E7D32" opacity="0.75"/>
+</svg>

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
+  <!-- Background (muted blue) -->
+  <rect x="0" y="0" width="240" height="240" rx="52" fill="#78B8D4"/>
+  <!-- Cloud (muted) -->
+  <circle cx="86" cy="110" r="22" fill="#CCDDEE" opacity="0.95"/>
+  <circle cx="114" cy="98" r="28" fill="#CCDDEE" opacity="0.95"/>
+  <circle cx="150" cy="104" r="24" fill="#CCDDEE" opacity="0.95"/>
+  <circle cx="174" cy="112" r="18" fill="#CCDDEE" opacity="0.95"/>
+  <rect x="70" y="112" width="122" height="26" fill="#CCDDEE" opacity="0.95"/>
+  <!-- Sun (dimmer) -->
+  <circle cx="110" cy="96" r="40" fill="#F5C842"/>
+  <!-- Rays -->
+  <line x1="110" y1="42" x2="110" y2="30" stroke="#F5C842" stroke-width="6" stroke-linecap="round"/>
+  <line x1="144" y1="62" x2="152" y2="52" stroke="#F5C842" stroke-width="6" stroke-linecap="round"/>
+  <line x1="76" y1="62" x2="68" y2="52" stroke="#F5C842" stroke-width="6" stroke-linecap="round"/>
+  <line x1="158" y1="96" x2="170" y2="96" stroke="#F5C842" stroke-width="6" stroke-linecap="round"/>
+  <line x1="62" y1="96" x2="50" y2="96" stroke="#F5C842" stroke-width="6" stroke-linecap="round"/>
+  <!-- Face - sad -->
+  <circle cx="96" cy="90" r="6" fill="white"/>
+  <circle cx="124" cy="90" r="6" fill="white"/>
+  <circle cx="99" cy="92" r="3" fill="#B8860B"/>
+  <circle cx="127" cy="92" r="3" fill="#B8860B"/>
+  <!-- Worried brows -->
+  <path d="M89 80 Q96 76 103 80" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M117 80 Q124 76 131 80" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Sad mouth -->
+  <path d="M96 112 Q110 104 124 112" fill="none" stroke="white" stroke-width="4" stroke-linecap="round"/>
+  <!-- Tear -->
+  <ellipse cx="93" cy="104" rx="3" ry="5" fill="#B3D9F0"/>
+  <!-- Pool deck -->
+  <rect x="20" y="164" width="200" height="10" rx="2" fill="#8CAABB"/>
+  <!-- Pool water (darker) -->
+  <rect x="20" y="173" width="200" height="52" fill="#1976A8"/>
+  <!-- Waves (faint) -->
+  <path d="M24 190 Q48 180 72 190 Q96 200 120 190 Q144 180 168 190 Q192 200 216 190" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" opacity="0.4"/>
+</svg>

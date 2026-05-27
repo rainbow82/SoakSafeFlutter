@@ -1,0 +1,135 @@
+# SoakSafe — GitHub Actions: Flutter debug APK + Firebase App Distribution
+#
+# --- GitHub → Settings → Secrets and variables → Actions ---
+#
+# Required:
+#   FIREBASE_SERVICE_ACCOUNT_JSON
+#     Service account JSON for Firebase CLI (App Distribution).
+#
+# Optional:
+#   FIREBASE_APP_ID
+#     If unset, CI matches applicationId in android/app/build.gradle.kts to
+#     android/app/google-services.json.
+#     For com.shannonbeach.soaksafe: 1:20052745810:android:53095ee37366def0c7898b
+#   FIREBASE_TESTER_GROUPS
+#   FIREBASE_TESTER_EMAILS
+
+name: Firebase App Distribution
+
+on:
+  push:
+    branches:
+      - main
+      - working
+  workflow_dispatch:
+
+concurrency:
+  group: firebase-app-distribution-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build debug APK
+        run: flutter build apk --debug
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 14
+
+  distribute_firebase:
+    runs-on: ubuntu-latest
+    needs: build_apk
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download debug APK
+        uses: actions/download-artifact@v4
+        with:
+          name: app-debug-apk
+          path: build/app/outputs/flutter-apk
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools@13
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+
+      - name: Resolve Firebase App ID
+        run: |
+          set -euo pipefail
+          if [ -n "${{ secrets.FIREBASE_APP_ID }}" ]; then
+            echo "FIREBASE_APP_ID=${{ secrets.FIREBASE_APP_ID }}" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          app_id="$(node <<'NODE'
+          const fs = require('fs');
+          const gs = require('./android/app/google-services.json');
+          const gradle = fs.readFileSync('android/app/build.gradle.kts', 'utf8');
+          const match = gradle.match(/applicationId\s*=\s*"([^"]+)"/);
+          if (!match) {
+            throw new Error('Could not read applicationId from android/app/build.gradle.kts');
+          }
+          const packageName = match[1];
+          const client = gs.client.find(
+            (entry) => entry.client_info.android_client_info.package_name === packageName
+          );
+          if (!client) {
+            throw new Error('No google-services.json client for package: ' + packageName);
+          }
+          process.stdout.write(client.client_info.mobilesdk_app_id);
+          NODE
+          )"
+          echo "FIREBASE_APP_ID=$app_id" >> "$GITHUB_ENV"
+
+      - name: Distribute to Firebase App Distribution
+        env:
+          FIREBASE_TESTER_GROUPS: ${{ secrets.FIREBASE_TESTER_GROUPS }}
+          FIREBASE_TESTER_EMAILS: ${{ secrets.FIREBASE_TESTER_EMAILS }}
+        run: |
+          set -euo pipefail
+          test -n "$FIREBASE_APP_ID"
+          echo "Using Firebase app id: $FIREBASE_APP_ID"
+
+          set -- firebase appdistribution:distribute build/app/outputs/flutter-apk/app-debug.apk \
+            --app "$FIREBASE_APP_ID" \
+            --release-notes "SoakSafe Flutter build | run ${GITHUB_RUN_NUMBER} | ${GITHUB_SHA::7}"
+
+          if [ -n "${FIREBASE_TESTER_GROUPS:-}" ]; then
+            set -- "$@" --groups "$FIREBASE_TESTER_GROUPS"
+          fi
+          if [ -n "${FIREBASE_TESTER_EMAILS:-}" ]; then
+            set -- "$@" --testers "$FIREBASE_TESTER_EMAILS"
+          fi
+
+          "$@"

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
+  <!-- Background -->
+  <rect x="0" y="0" width="240" height="240" rx="52" fill="#4FC3F7"/>
+  <!-- Cloud (behind sun) -->
+  <circle cx="86" cy="110" r="22" fill="white" opacity="0.95"/>
+  <circle cx="114" cy="98" r="28" fill="white" opacity="0.95"/>
+  <circle cx="150" cy="104" r="24" fill="white" opacity="0.95"/>
+  <circle cx="174" cy="112" r="18" fill="white" opacity="0.95"/>
+  <rect x="70" y="112" width="122" height="26" fill="white" opacity="0.95"/>
+  <!-- Sun -->
+  <circle cx="110" cy="96" r="40" fill="#FFD600"/>
+  <!-- Rays -->
+  <line x1="110" y1="42" x2="110" y2="30" stroke="#FFD600" stroke-width="6" stroke-linecap="round"/>
+  <line x1="144" y1="62" x2="152" y2="52" stroke="#FFD600" stroke-width="6" stroke-linecap="round"/>
+  <line x1="76" y1="62" x2="68" y2="52" stroke="#FFD600" stroke-width="6" stroke-linecap="round"/>
+  <line x1="158" y1="96" x2="170" y2="96" stroke="#FFD600" stroke-width="6" stroke-linecap="round"/>
+  <line x1="62" y1="96" x2="50" y2="96" stroke="#FFD600" stroke-width="6" stroke-linecap="round"/>
+  <line x1="144" y1="130" x2="152" y2="140" stroke="#FFD600" stroke-width="6" stroke-linecap="round"/>
+  <line x1="76" y1="130" x2="68" y2="140" stroke="#FFD600" stroke-width="6" stroke-linecap="round"/>
+  <!-- Face -->
+  <circle cx="96" cy="90" r="6" fill="white"/>
+  <circle cx="124" cy="90" r="6" fill="white"/>
+  <circle cx="99" cy="88" r="3" fill="#F39C12"/>
+  <circle cx="127" cy="88" r="3" fill="#F39C12"/>
+  <path d="M96 108 Q110 120 124 108" fill="none" stroke="white" stroke-width="4" stroke-linecap="round"/>
+  <!-- Pool deck -->
+  <rect x="20" y="164" width="200" height="10" rx="2" fill="#B3E5FC"/>
+  <!-- Pool water -->
+  <rect x="20" y="173" width="200" height="52" rx="0" fill="#0288D1"/>
+  <!-- Waves -->
+  <path d="M24 190 Q48 180 72 190 Q96 200 120 190 Q144 180 168 190 Q192 200 216 190" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" opacity="0.8"/>
+  <path d="M24 208 Q52 198 80 208 Q108 218 136 208 Q164 198 192 208 Q208 214 216 210" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+</svg>

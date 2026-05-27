@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "20052745810",
+    "project_id": "soaksafe-3e95e",
+    "storage_bucket": "soaksafe-3e95e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:20052745810:android:cab76b43d0cb6899c7898b",
+        "android_client_info": {
+          "package_name": "com.shannon.soaksafe"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDr-1_z3np3vZlWEEfUISfYTzGoISLwyv8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:20052745810:android:53095ee37366def0c7898b",
+        "android_client_info": {
+          "package_name": "com.shannonbeach.soaksafe"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDr-1_z3np3vZlWEEfUISfYTzGoISLwyv8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
