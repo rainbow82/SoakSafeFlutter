@@ -1,8 +1,8 @@
-# SoakSafe (Flutter)
+# SoakSafeFlutter
 
-Cross-platform **pool maintenance tracker** for **Android** and **iOS**, migrated from the native Android capstone app.
+Cross-platform **pool maintenance tracker** for **Android** and **iOS**, migrated from the native Android app.
 
-- **Single repo** for Play Store + App Store
+- **Repo:** [github.com/rainbow82/SoakSafeFlutter](https://github.com/rainbow82/SoakSafeFlutter)
 - **Local-first** SQLite storage (same schema as the Room app)
 - **Compatible password hashes** with the Android app (`SS1$` PBKDF2)
 - **Package / bundle ID:** `com.shannonbeach.soaksafe`
@@ -16,7 +16,7 @@ Cross-platform **pool maintenance tracker** for **Android** and **iOS**, migrate
 ## Getting started
 
 ```bash
-cd ~/Documents/repos/SoakSafe
+cd ~/Documents/repos/SoakSafeFlutter
 flutter pub get
 flutter run
 ```
@@ -80,4 +80,4 @@ Runs on push to `main` or `working`, builds `flutter build apk --debug`, and dis
 
 ## Original repo
 
-The native Android capstone lives at `d424-software-engineering-capstone`. This repo replaces it for ongoing store releases.
+The native Android app lives in [SoakSafe](https://github.com/rainbow82/SoakSafe) (`working` branch). The WGU capstone copy is at `d424-software-engineering-capstone`.
