@@ -8,6 +8,52 @@
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
 	<string>SoakSafe</string>
+	<key>CFBundleIcons</key>
+	<dict>
+		<key>CFBundlePrimaryIcon</key>
+		<dict>
+			<key>CFBundleIconName</key>
+			<string>AppIcon</string>
+		</dict>
+		<key>CFBundleAlternateIcons</key>
+		<dict>
+			<key>Sad</key>
+			<dict>
+				<key>CFBundleIconName</key>
+				<string>AppIconSad</string>
+			</dict>
+			<key>Storm</key>
+			<dict>
+				<key>CFBundleIconName</key>
+				<string>AppIconStorm</string>
+			</dict>
+		</dict>
+	</dict>
+	<key>CFBundleIcons~ipad</key>
+	<dict>
+		<key>CFBundlePrimaryIcon</key>
+		<dict>
+			<key>CFBundleIconName</key>
+			<string>AppIcon</string>
+		</dict>
+		<key>CFBundleAlternateIcons</key>
+		<dict>
+			<key>Sad</key>
+			<dict>
+				<key>CFBundleIconName</key>
+				<string>AppIconSad</string>
+			</dict>
+			<key>Storm</key>
+			<dict>
+				<key>CFBundleIconName</key>
+				<string>AppIconStorm</string>
+			</dict>
+		</dict>
+	</dict>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.shannonbeach.soaksafe.iconrefresh</string>
+	</array>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

@@ -76,7 +76,7 @@ Runs on push to `main` or `working`, builds `flutter build apk --debug`, and dis
 | Activities + ViewBinding | Screens + Material widgets |
 | `bg_home_pool.jpg` | `assets/images/bg_home_pool.jpg` |
 
-**Not yet ported (follow-up):** profile photo upload, iOS alternate launcher icons, full parity with every Android dialog.
+**Not yet ported (follow-up):** profile photo upload, full parity with every Android dialog.
 
 ## Original repo
 
