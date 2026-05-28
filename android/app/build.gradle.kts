@@ -6,7 +6,8 @@ plugins {
 
 android {
     namespace = "com.shannonbeach.soaksafe"
-    compileSdk = flutter.compileSdkVersion
+    // file_picker / flutter_plugin_android_lifecycle require API 36+.
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
