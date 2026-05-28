@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:soaksafe/app_state.dart';
 import 'package:soaksafe/core/constants/app_strings.dart';
+import 'package:soaksafe/core/services/profile_image_store.dart';
 import 'package:soaksafe/core/models/models.dart';
 import 'package:soaksafe/core/theme/soaksafe_colors.dart';
 import 'package:soaksafe/core/utils/codecs.dart';
@@ -23,11 +26,21 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   ChecklistRecord? _checklist;
   List<CustomLineEntry> _customLines = [];
   bool _loading = true;
+  File? _profileImage;
 
   @override
   void initState() {
     super.initState();
     _load();
+  }
+
+  Future<void> _loadProfileImage(int userId) async {
+    if (await ProfileImageStore.hasImage(userId)) {
+      final file = await ProfileImageStore.imageFile(userId);
+      if (mounted) setState(() => _profileImage = file);
+    } else if (mounted) {
+      setState(() => _profileImage = null);
+    }
   }
 
   Future<void> _load() async {
@@ -43,6 +56,33 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
       _customLines = CustomLinesCodec.decode(checklist.customLinesJson);
       _loading = false;
     });
+    await _loadProfileImage(userId);
+  }
+
+  Future<void> _logout() async {
+    final app = context.read<AppState>();
+    await app.clearSession();
+    if (context.mounted) context.go('/');
+  }
+
+  Future<void> _openProfile() async {
+    final updated = await context.push<bool>('/profile');
+    if (updated == true && mounted) {
+      final userId = context.read<AppState>().currentUserId;
+      if (userId != null) await _loadProfileImage(userId);
+    }
+  }
+
+  Widget _profileMenuIcon() {
+    final image = _profileImage;
+    return CircleAvatar(
+      radius: 18,
+      backgroundColor: Colors.white24,
+      backgroundImage: image != null ? FileImage(image) : null,
+      child: image == null
+          ? const Icon(Icons.person, color: Colors.white, size: 22)
+          : null,
+    );
   }
 
   Future<void> _save() async {
@@ -133,7 +173,6 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final app = context.watch<AppState>();
     if (_loading || _checklist == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -158,16 +197,30 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                       ),
                     ),
                     const Spacer(),
-                    IconButton(
-                      icon: const Icon(Icons.account_circle, color: Colors.white),
-                      onPressed: () => context.push('/profile'),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.logout, color: Colors.white),
-                      onPressed: () async {
-                        await app.clearSession();
-                        if (context.mounted) context.go('/');
+                    PopupMenuButton<String>(
+                      tooltip: AppStrings.menuProfile,
+                      offset: const Offset(0, 48),
+                      onSelected: (value) {
+                        if (value == 'profile') {
+                          _openProfile();
+                        } else if (value == 'logout') {
+                          _logout();
+                        }
                       },
+                      itemBuilder: (context) => const [
+                        PopupMenuItem(
+                          value: 'profile',
+                          child: Text(AppStrings.menuProfile),
+                        ),
+                        PopupMenuItem(
+                          value: 'logout',
+                          child: Text(AppStrings.logout),
+                        ),
+                      ],
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: _profileMenuIcon(),
+                      ),
                     ),
                   ],
                 ),
@@ -176,17 +229,19 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      FrostedCard(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Maintenance date', style: TextStyle(fontWeight: FontWeight.bold)),
-                            Text(date, style: const TextStyle(fontSize: 18)),
-                          ],
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4, bottom: 8),
+                        child: Text(
+                          date,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 12),
                       FrostedCard(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,6 +251,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                               contentPadding: EdgeInsets.zero,
                               title: const Text(AppStrings.taskVacuum),
                               value: c.vacuum,
+                              checkColor: SoakSafeColors.saveButtonText,
                               activeColor: SoakSafeColors.checkboxChecked,
                               onChanged: (v) => setState(() => c.vacuum = v ?? false),
                             ),
@@ -203,6 +259,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                               contentPadding: EdgeInsets.zero,
                               title: const Text(AppStrings.taskCleanSkimmer),
                               value: c.cleanSkimmer,
+                              checkColor: SoakSafeColors.saveButtonText,
                               activeColor: SoakSafeColors.checkboxChecked,
                               onChanged: (v) => setState(() => c.cleanSkimmer = v ?? false),
                             ),
@@ -210,6 +267,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                               contentPadding: EdgeInsets.zero,
                               title: const Text(AppStrings.taskAddWater),
                               value: c.addWater,
+                              checkColor: SoakSafeColors.saveButtonText,
                               activeColor: SoakSafeColors.checkboxChecked,
                               onChanged: (v) => setState(() => c.addWater = v ?? false),
                             ),
@@ -217,6 +275,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                               contentPadding: EdgeInsets.zero,
                               title: const Text(AppStrings.taskBrushWalls),
                               value: c.brushWalls,
+                              checkColor: SoakSafeColors.saveButtonText,
                               activeColor: SoakSafeColors.checkboxChecked,
                               onChanged: (v) => setState(() => c.brushWalls = v ?? false),
                             ),

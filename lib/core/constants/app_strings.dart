@@ -39,6 +39,11 @@ abstract final class AppStrings {
       'Remove this report entry permanently? This cannot be undone.';
   static const profileTitle = 'Profile';
   static const profileSaved = 'Profile updated.';
+  static const profilePhotoAdd = 'Add photo';
+  static const profilePhotoChange = 'Change photo';
+  static const profilePhotoRemove = 'Remove photo';
+  static const profilePhotoSaveFailed = 'Could not save your photo. Try another image.';
+  static const menuProfile = 'Profile';
   static const logout = 'Log out';
   static const pdfExportMenu = 'Export PDF';
   static const pdfReportDocumentTitle = 'SoakSafe — Maintenance Report';

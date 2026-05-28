@@ -1,11 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:soaksafe/core/constants/app_strings.dart';
+import 'package:soaksafe/core/services/profile_image_store.dart';
 import 'package:soaksafe/core/theme/soaksafe_colors.dart';
 import 'package:soaksafe/data/user_repository.dart';
 import 'package:soaksafe/widgets/frosted_card.dart';
 import 'package:soaksafe/widgets/pool_background.dart';
+import 'package:soaksafe/widgets/profile_photo_section.dart';
 import 'package:soaksafe/widgets/soaksafe_buttons.dart';
 
 class CreateAccountScreen extends StatefulWidget {
@@ -21,10 +26,15 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final _password = TextEditingController();
   final _poolSize = TextEditingController();
   bool _saltWater = false;
+  File? _pendingPhoto;
 
   Future<void> _save() async {
     final repo = context.read<UserRepository>();
     final size = int.tryParse(_poolSize.text.trim()) ?? 0;
+    if (size <= 0) {
+      _snack(AppStrings.errorPoolSize);
+      return;
+    }
     final (result, user) = await repo.registerUser(
       fullName: _fullName.text,
       username: _username.text,
@@ -39,7 +49,16 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       case RegisterResult.usernameTaken:
         _snack(AppStrings.errorUsernameTaken);
       case RegisterResult.success:
-        if (user != null) context.pop(true);
+        if (user != null && _pendingPhoto != null) {
+          final saved = await ProfileImageStore.saveFromPicker(
+            user.id,
+            XFile(_pendingPhoto!.path),
+          );
+          if (!saved && mounted) {
+            _snack(AppStrings.profilePhotoSaveFailed);
+          }
+        }
+        if (mounted) context.pop(true);
     }
   }
 
@@ -74,6 +93,10 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                                 fontWeight: FontWeight.bold,
                                 color: SoakSafeColors.homeFormOnSurface,
                               ),
+                        ),
+                        const SizedBox(height: 16),
+                        ProfilePhotoSection(
+                          onChanged: (file, _) => setState(() => _pendingPhoto = file),
                         ),
                         const SizedBox(height: 16),
                         TextField(

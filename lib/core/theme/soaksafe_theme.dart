@@ -14,5 +14,14 @@ ThemeData buildSoakSafeTheme() {
     inputDecorationTheme: const InputDecorationTheme(
       labelStyle: TextStyle(color: SoakSafeColors.homeFormOnSurfaceVariant),
     ),
+    checkboxTheme: CheckboxThemeData(
+      fillColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return SoakSafeColors.checkboxChecked;
+        }
+        return null;
+      }),
+      checkColor: WidgetStateProperty.all(SoakSafeColors.saveButtonText),
+    ),
   );
 }

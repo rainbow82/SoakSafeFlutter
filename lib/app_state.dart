@@ -34,6 +34,7 @@ class AppState extends ChangeNotifier {
     currentUserId = null;
     currentUsername = null;
     await sessionService.clearSession();
+    await sessionService.clearBiometricEnrollment();
     notifyListeners();
   }
 }

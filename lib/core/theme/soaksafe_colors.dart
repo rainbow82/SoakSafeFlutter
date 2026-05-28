@@ -16,7 +16,7 @@ abstract final class SoakSafeColors {
   static const bottomBarBg = Color(0xFFDCD4E8);
   static const scrim = Color(0x661A2B45);
   static const dialogSurface = Color(0xFFFFFFFF);
-  static const checkboxChecked = Color(0xFF6D28D9);
+  static const checkboxChecked = saveButton;
   static const reportHeader = Color(0xFF006494);
   static const reportRowAlt = Color(0xFFF7F9FC);
 }

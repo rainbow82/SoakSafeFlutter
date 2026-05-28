@@ -18,11 +18,15 @@ class FrostedCard extends StatelessWidget {
     return Container(
       margin: margin,
       decoration: BoxDecoration(
-        color: SoakSafeColors.frostedSurface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: SoakSafeColors.frostedOutline),
       ),
-      child: Padding(padding: padding, child: child),
+      clipBehavior: Clip.antiAlias,
+      child: Material(
+        color: SoakSafeColors.frostedSurface,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(padding: padding, child: child),
+      ),
     );
   }
 }
