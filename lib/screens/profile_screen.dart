@@ -24,7 +24,9 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final _username = TextEditingController();
   final _poolSize = TextEditingController();
+  final _hotTubSize = TextEditingController();
   bool _saltWater = false;
+  bool _hotTubSaltWater = false;
   bool _aboveGround = false;
   bool _loading = true;
   File? _existingPhoto;
@@ -49,8 +51,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (user == null || !mounted) return;
     setState(() {
       _username.text = user.username;
-      _poolSize.text = user.poolSizeGallons.toString();
+      _poolSize.text = user.poolSizeGallons > 0 ? user.poolSizeGallons.toString() : '';
+      _hotTubSize.text =
+          user.hotTubSizeGallons > 0 ? user.hotTubSizeGallons.toString() : '';
       _saltWater = user.poolSaltWater;
+      _hotTubSaltWater = user.hotTubSaltWater;
       _aboveGround = user.poolAboveGround;
       _existingPhoto = photo;
       _loading = false;
@@ -82,17 +87,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final userId = app.currentUserId;
     if (userId == null) return;
     final size = int.tryParse(_poolSize.text.trim()) ?? 0;
+    final hotTubSize = int.tryParse(_hotTubSize.text.trim()) ?? 0;
     final (result, updated) = await context.read<UserRepository>().updateProfile(
           userId: userId,
           username: _username.text,
           poolSizeGallons: size,
           poolSaltWater: _saltWater,
           poolAboveGround: _aboveGround,
+          hotTubSizeGallons: hotTubSize,
+          hotTubSaltWater: _hotTubSaltWater,
         );
     if (!mounted) return;
     if (result != UpdateProfileResult.success || updated == null) {
       if (result == UpdateProfileResult.invalidPoolSize) {
         _snack(AppStrings.errorPoolSize);
+      } else if (result == UpdateProfileResult.noWaterBody) {
+        _snack(AppStrings.errorNoWaterBody);
       } else if (result == UpdateProfileResult.usernameTaken) {
         _snack(AppStrings.errorUsernameTaken);
       }
@@ -123,6 +133,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _snack(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
+
+  ButtonStyle get _selectorStyle => ButtonStyle(
+        backgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return SoakSafeColors.saveButton;
+          }
+          return null;
+        }),
+        foregroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return SoakSafeColors.saveButtonText;
+          }
+          return null;
+        }),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -177,9 +202,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             border: OutlineInputBorder(),
                           ),
                         ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _hotTubSize,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: AppStrings.hotTubSizeLabel,
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
                         const SizedBox(height: 16),
                         const Text('Installation', style: TextStyle(fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 8),
                         SegmentedButton<bool>(
+                          style: _selectorStyle,
                           segments: const [
                             ButtonSegment(value: true, label: Text(AppStrings.poolAboveGround)),
                             ButtonSegment(value: false, label: Text(AppStrings.poolInGround)),
@@ -189,13 +225,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 16),
                         const Text('Pool type', style: TextStyle(fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 8),
                         SegmentedButton<bool>(
+                          style: _selectorStyle,
                           segments: const [
                             ButtonSegment(value: false, label: Text(AppStrings.poolTypeFresh)),
                             ButtonSegment(value: true, label: Text(AppStrings.poolTypeSalt)),
                           ],
                           selected: {_saltWater},
                           onSelectionChanged: (s) => setState(() => _saltWater = s.first),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text('Hot tub type', style: TextStyle(fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 8),
+                        SegmentedButton<bool>(
+                          style: _selectorStyle,
+                          segments: const [
+                            ButtonSegment(value: false, label: Text(AppStrings.poolTypeFresh)),
+                            ButtonSegment(value: true, label: Text(AppStrings.poolTypeSalt)),
+                          ],
+                          selected: {_hotTubSaltWater},
+                          onSelectionChanged: (s) =>
+                              setState(() => _hotTubSaltWater = s.first),
                         ),
                         const SizedBox(height: 24),
                         SaveButton(label: AppStrings.saveProfile, onPressed: _save),

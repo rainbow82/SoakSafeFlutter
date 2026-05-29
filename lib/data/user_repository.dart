@@ -11,6 +11,7 @@ enum UpdateProfileResult {
   usernameTaken,
   emptyUsername,
   invalidPoolSize,
+  noWaterBody,
   userNotFound,
 }
 
@@ -80,10 +81,16 @@ class UserRepository {
     required int poolSizeGallons,
     required bool poolSaltWater,
     required bool poolAboveGround,
+    int hotTubSizeGallons = 0,
+    bool hotTubSaltWater = false,
   }) async {
     final u = username.trim();
     if (u.isEmpty) return (UpdateProfileResult.emptyUsername, null);
-    if (poolSizeGallons <= 0) return (UpdateProfileResult.invalidPoolSize, null);
+    final pool = poolSizeGallons < 0 ? 0 : poolSizeGallons;
+    final hotTub = hotTubSizeGallons < 0 ? 0 : hotTubSizeGallons;
+    if (pool <= 0 && hotTub <= 0) {
+      return (UpdateProfileResult.noWaterBody, null);
+    }
 
     final row = await _db.userById(userId);
     if (row == null) return (UpdateProfileResult.userNotFound, null);
@@ -98,11 +105,11 @@ class UserRepository {
       username: u,
       password: row.password,
       fullName: row.fullName,
-      poolSizeGallons: poolSizeGallons,
+      poolSizeGallons: pool,
       poolSaltWater: poolSaltWater,
       poolAboveGround: poolAboveGround,
-      hotTubSizeGallons: row.hotTubSizeGallons,
-      hotTubSaltWater: row.hotTubSaltWater,
+      hotTubSizeGallons: hotTub,
+      hotTubSaltWater: hotTubSaltWater,
     );
     await _db.updateUserProfile(updated);
     return (UpdateProfileResult.success, updated);
