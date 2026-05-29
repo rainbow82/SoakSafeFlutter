@@ -99,6 +99,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return;
     }
     if (!await _savePhoto(userId)) return;
+    final enrollment = await app.sessionService.biometricEnrollment();
+    if (enrollment != null && enrollment.userId == userId) {
+      await app.sessionService.saveBiometricEnrollment(
+        userId: updated.id,
+        username: updated.username,
+      );
+    }
     await app.setSession(updated.id, updated.username);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(

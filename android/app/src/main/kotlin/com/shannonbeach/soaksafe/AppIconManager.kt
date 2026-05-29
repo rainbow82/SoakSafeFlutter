@@ -4,14 +4,14 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
 
 /**
  * Switches the launcher icon (activity-alias) based on how long the app has been idle.
  * Happy: < 7 days · Sad: 7–13 days · Storm: 14+ days since last foreground use.
+ *
+ * Icon is refreshed when the app comes to the foreground (no background scheduler —
+ * WorkManager breaks release builds under R8 without extra keep rules).
  */
 object AppIconManager {
     const val DAYS_SAD = 7
@@ -19,7 +19,6 @@ object AppIconManager {
 
     private const val PREF = "soaksafe_app_icon"
     private const val KEY_LAST_FOREGROUND_MS = "last_foreground_ms"
-    private const val WORK_NAME = "soaksafe_app_icon_refresh"
     private const val TAG = "AppIconManager"
 
     enum class Variant {
@@ -47,15 +46,6 @@ object AppIconManager {
             idleDays >= DAYS_SAD -> Variant.SAD
             else -> Variant.HAPPY
         }
-    }
-
-    fun schedulePeriodicRefresh(context: Context) {
-        val request = PeriodicWorkRequestBuilder<AppIconUpdateWorker>(1, TimeUnit.DAYS).build()
-        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-            WORK_NAME,
-            ExistingPeriodicWorkPolicy.KEEP,
-            request,
-        )
     }
 
     private fun applyVariant(context: Context, variant: Variant) {

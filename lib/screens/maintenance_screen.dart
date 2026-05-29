@@ -47,9 +47,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     final app = context.read<AppState>();
     final userId = app.currentUserId;
     if (userId == null) return;
-    final repo = context.read<MaintenanceRepository>();
-    await repo.ensureTodayDate(userId);
-    final checklist = await repo.loadChecklist(userId);
+    final checklist = await context.read<MaintenanceRepository>().loadChecklist(userId);
     if (!mounted) return;
     setState(() {
       _checklist = checklist;

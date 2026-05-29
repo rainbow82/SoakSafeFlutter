@@ -8,12 +8,17 @@ import androidx.lifecycle.ProcessLifecycleOwner
 class SoakSafeApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        AppIconManager.schedulePeriodicRefresh(this)
-        AppIconManager.refreshIconFromIdleTime(this)
         ProcessLifecycleOwner.get().lifecycle.addObserver(
             object : DefaultLifecycleObserver {
+                private var coldStart = true
+
                 override fun onStart(owner: LifecycleOwner) {
-                    AppIconManager.onAppForeground(this@SoakSafeApplication)
+                    val app = this@SoakSafeApplication
+                    if (coldStart) {
+                        coldStart = false
+                        AppIconManager.refreshIconFromIdleTime(app)
+                    }
+                    AppIconManager.onAppForeground(app)
                 }
             },
         )

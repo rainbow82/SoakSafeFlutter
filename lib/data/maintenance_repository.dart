@@ -9,30 +9,42 @@ class MaintenanceRepository {
   final AppDatabase _db;
 
   Future<ChecklistRecord> loadChecklist(int userId) =>
-      _db.getOrCreateChecklist(userId);
+      _db.getChecklistOrDefault(userId);
 
   Future<void> saveFullChecklist(int userId, ChecklistRecord checklist) async {
+    final now = DateTime.now();
+    final midnight = DateTime(now.year, now.month, now.day);
+
     await _db.upsertChecklist(checklist);
+    await _db.upsertMaintenanceDate(userId, midnight.millisecondsSinceEpoch);
+
+    final items = _checklistToLineItems(checklist);
+    final existing = await _db.checklistSavedEventForDay(userId, now);
+    final eventTimeMillis = now.millisecondsSinceEpoch;
+
+    if (existing != null) {
+      existing.eventTimeMillis = eventTimeMillis;
+      existing.dateMillis = eventTimeMillis;
+      LineItemsCodec.applyLinesToEvent(existing, items);
+      await _db.updateEvent(existing);
+      return;
+    }
+
     final event = MaintenanceEventRecord(
       id: 0,
       userId: userId,
       eventType: 'CHECKLIST_SAVED',
-      eventTimeMillis: DateTime.now().millisecondsSinceEpoch,
-      dateMillis: DateTime.now().millisecondsSinceEpoch,
+      eventTimeMillis: eventTimeMillis,
+      dateMillis: eventTimeMillis,
     );
-    final items = _checklistToLineItems(checklist);
     LineItemsCodec.applyLinesToEvent(event, items);
     await _db.insertEvent(event);
   }
 
-  Future<void> ensureTodayDate(int userId) async {
-    final today = DateTime.now();
-    final midnight = DateTime(today.year, today.month, today.day);
-    await _db.upsertMaintenanceDate(userId, midnight.millisecondsSinceEpoch);
+  Future<List<MaintenanceEventRecord>> loadEvents(int userId) async {
+    final events = await _db.listEvents(userId);
+    return events.where((e) => e.eventType == 'CHECKLIST_SAVED').toList();
   }
-
-  Future<List<MaintenanceEventRecord>> loadEvents(int userId) =>
-      _db.listEvents(userId);
 
   Future<MaintenanceEventRecord?> eventById(int eventId, int userId) =>
       _db.eventById(eventId, userId);

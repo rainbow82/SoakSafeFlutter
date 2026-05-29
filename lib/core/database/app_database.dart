@@ -142,19 +142,33 @@ class AppDatabase {
     );
   }
 
-  Future<ChecklistRecord> getOrCreateChecklist(int userId) async {
+  Future<ChecklistRecord> getChecklistOrDefault(int userId) async {
     final rows = await _db.query(
       'maintenance_checklist',
       where: 'userId = ?',
       whereArgs: [userId],
       limit: 1,
     );
-    if (rows.isEmpty) {
-      final row = ChecklistRecord(userId: userId);
-      await upsertChecklist(row);
-      return row;
-    }
+    if (rows.isEmpty) return ChecklistRecord(userId: userId);
     return _checklistFromRow(rows.first);
+  }
+
+  Future<MaintenanceEventRecord?> checklistSavedEventForDay(
+    int userId,
+    DateTime day,
+  ) async {
+    final dayStart = DateTime(day.year, day.month, day.day).millisecondsSinceEpoch;
+    final dayEnd = dayStart + const Duration(days: 1).inMilliseconds;
+    final rows = await _db.query(
+      'maintenance_events',
+      where:
+          'userId = ? AND event_type = ? AND event_time_millis >= ? AND event_time_millis < ?',
+      whereArgs: [userId, 'CHECKLIST_SAVED', dayStart, dayEnd],
+      orderBy: 'event_time_millis DESC, id DESC',
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return _eventFromRow(rows.first);
   }
 
   Future<void> upsertChecklist(ChecklistRecord row) async {

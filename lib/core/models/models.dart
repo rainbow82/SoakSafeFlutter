@@ -84,8 +84,8 @@ class MaintenanceEventRecord {
   final int id;
   final int userId;
   final String eventType;
-  final int eventTimeMillis;
-  final int dateMillis;
+  int eventTimeMillis;
+  int dateMillis;
   bool vacuum;
   bool cleanSkimmer;
   bool addWater;

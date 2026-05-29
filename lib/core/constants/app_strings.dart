@@ -8,6 +8,14 @@ abstract final class AppStrings {
   static const saveMaintenance = 'Save';
   static const maintenanceSaved = 'Maintenance saved.';
   static const signedInWelcome = 'Welcome back.';
+  static const biometricEnableLabel = 'Use fingerprint to sign in';
+  static const biometricSignIn = 'Sign in with fingerprint';
+  static const biometricEnabled = 'Fingerprint sign-in enabled for this account.';
+  static const biometricDisabled = 'Fingerprint sign-in turned off.';
+  static const biometricEnableRequiresPassword =
+      'Sign in with your password first to enable fingerprint.';
+  static const biometricAccountMissing =
+      'Saved account no longer exists. Sign in with your password.';
   static const accountCreated = 'Account created. You can sign in now.';
   static const taskVacuum = 'Vacuum';
   static const taskCleanSkimmer = 'Clean skimmer';
