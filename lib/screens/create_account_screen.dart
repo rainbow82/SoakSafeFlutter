@@ -25,22 +25,29 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final _username = TextEditingController();
   final _password = TextEditingController();
   final _poolSize = TextEditingController();
+  final _hotTubSize = TextEditingController();
   bool _saltWater = false;
+  bool _hotTubSaltWater = false;
   File? _pendingPhoto;
 
   Future<void> _save() async {
     final repo = context.read<UserRepository>();
     final size = int.tryParse(_poolSize.text.trim()) ?? 0;
-    if (size <= 0) {
-      _snack(AppStrings.errorPoolSize);
+    final hotTubSize = int.tryParse(_hotTubSize.text.trim()) ?? 0;
+    final poolGallons = size < 0 ? 0 : size;
+    final hotTubGallons = hotTubSize < 0 ? 0 : hotTubSize;
+    if (poolGallons <= 0 && hotTubGallons <= 0) {
+      _snack(AppStrings.errorNoWaterBody);
       return;
     }
     final (result, user) = await repo.registerUser(
       fullName: _fullName.text,
       username: _username.text,
       password: _password.text,
-      poolSizeGallons: size,
+      poolSizeGallons: poolGallons,
       poolSaltWater: _saltWater,
+      hotTubSizeGallons: hotTubGallons,
+      hotTubSaltWater: _hotTubSaltWater,
     );
     if (!mounted) return;
     switch (result) {
@@ -65,6 +72,21 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   void _snack(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
+
+  ButtonStyle get _waterTypeStyle => ButtonStyle(
+        backgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return SoakSafeColors.saveButton;
+          }
+          return null;
+        }),
+        foregroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return SoakSafeColors.saveButtonText;
+          }
+          return null;
+        }),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -132,15 +154,39 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                             border: OutlineInputBorder(),
                           ),
                         ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _hotTubSize,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: AppStrings.hotTubSizeLabel,
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
                         const SizedBox(height: 16),
                         const Text('Pool type', style: TextStyle(fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 8),
                         SegmentedButton<bool>(
+                          style: _waterTypeStyle,
                           segments: const [
                             ButtonSegment(value: false, label: Text(AppStrings.poolTypeFresh)),
                             ButtonSegment(value: true, label: Text(AppStrings.poolTypeSalt)),
                           ],
                           selected: {_saltWater},
                           onSelectionChanged: (s) => setState(() => _saltWater = s.first),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text('Hot tub type', style: TextStyle(fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 8),
+                        SegmentedButton<bool>(
+                          style: _waterTypeStyle,
+                          segments: const [
+                            ButtonSegment(value: false, label: Text(AppStrings.poolTypeFresh)),
+                            ButtonSegment(value: true, label: Text(AppStrings.poolTypeSalt)),
+                          ],
+                          selected: {_hotTubSaltWater},
+                          onSelectionChanged: (s) =>
+                              setState(() => _hotTubSaltWater = s.first),
                         ),
                         const SizedBox(height: 24),
                         SaveButton(label: AppStrings.saveAccount, onPressed: _save),

@@ -26,6 +26,8 @@ class UserRecord {
     required this.poolSizeGallons,
     required this.poolSaltWater,
     required this.poolAboveGround,
+    this.hotTubSizeGallons = 0,
+    this.hotTubSaltWater = false,
   });
 
   final int id;
@@ -35,6 +37,8 @@ class UserRecord {
   final int poolSizeGallons;
   final bool poolSaltWater;
   final bool poolAboveGround;
+  final int hotTubSizeGallons;
+  final bool hotTubSaltWater;
 }
 
 class ChecklistRecord {

@@ -13,7 +13,19 @@ class AppDatabase {
     if (_instance != null) return _instance!;
     final db = await openDatabase(
       join(path, 'soaksafe.db'),
-      version: 10,
+      version: 12,
+      onUpgrade: (database, oldVersion, newVersion) async {
+        if (oldVersion < 11) {
+          await database.execute(
+            'ALTER TABLE users ADD COLUMN hot_tub_size_gallons INTEGER NOT NULL DEFAULT 0',
+          );
+        }
+        if (oldVersion < 12) {
+          await database.execute(
+            'ALTER TABLE users ADD COLUMN hot_tub_salt_water INTEGER NOT NULL DEFAULT 0',
+          );
+        }
+      },
       onCreate: (database, version) async {
         await database.execute('''
           CREATE TABLE users (
@@ -23,7 +35,9 @@ class AppDatabase {
             fullName TEXT NOT NULL,
             pool_size_gallons INTEGER NOT NULL DEFAULT 0,
             pool_salt_water INTEGER NOT NULL DEFAULT 0,
-            pool_above_ground INTEGER NOT NULL DEFAULT 0
+            pool_above_ground INTEGER NOT NULL DEFAULT 0,
+            hot_tub_size_gallons INTEGER NOT NULL DEFAULT 0,
+            hot_tub_salt_water INTEGER NOT NULL DEFAULT 0
           )
         ''');
         await database.execute('''
@@ -116,6 +130,8 @@ class AppDatabase {
       'pool_size_gallons': user.poolSizeGallons,
       'pool_salt_water': user.poolSaltWater ? 1 : 0,
       'pool_above_ground': user.poolAboveGround ? 1 : 0,
+      'hot_tub_size_gallons': user.hotTubSizeGallons,
+      'hot_tub_salt_water': user.hotTubSaltWater ? 1 : 0,
     });
   }
 
@@ -127,6 +143,8 @@ class AppDatabase {
         'pool_size_gallons': user.poolSizeGallons,
         'pool_salt_water': user.poolSaltWater ? 1 : 0,
         'pool_above_ground': user.poolAboveGround ? 1 : 0,
+        'hot_tub_size_gallons': user.hotTubSizeGallons,
+        'hot_tub_salt_water': user.hotTubSaltWater ? 1 : 0,
       },
       where: 'id = ?',
       whereArgs: [user.id],
@@ -259,6 +277,8 @@ class AppDatabase {
         poolSizeGallons: row['pool_size_gallons']! as int,
         poolSaltWater: (row['pool_salt_water']! as int) == 1,
         poolAboveGround: (row['pool_above_ground']! as int) == 1,
+        hotTubSizeGallons: (row['hot_tub_size_gallons'] as int?) ?? 0,
+        hotTubSaltWater: (row['hot_tub_salt_water'] as int?) == 1,
       );
 
   ChecklistRecord _checklistFromRow(Map<String, Object?> row) => ChecklistRecord(

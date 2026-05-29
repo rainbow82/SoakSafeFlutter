@@ -27,7 +27,8 @@ abstract final class AppStrings {
   static const chemicalNoPhos = 'No phos';
   static const sectionTasks = 'Tasks';
   static const sectionChemicals = 'Chemicals';
-  static const poolSizeLabel = 'Pool size (gallons)';
+  static const poolSizeLabel = 'Pool size (gallons, optional)';
+  static const hotTubSizeLabel = 'Hot tub size (gallons, optional)';
   static const poolTypeFresh = 'Fresh water';
   static const poolTypeSalt = 'Salt water';
   static const poolAboveGround = 'Above ground';
@@ -38,6 +39,8 @@ abstract final class AppStrings {
   static const errorUsernameTaken = 'That username is already in use.';
   static const errorCreateEmpty = 'Enter your full name, username, and password.';
   static const errorPoolSize = 'Enter your pool size as a whole number greater than zero.';
+  static const errorNoWaterBody =
+      'Enter a pool size or a hot tub size (at least one is required).';
   static const maintenanceReportTitle = 'Maintenance Report';
   static const reportNoEvents = 'No maintenance events saved yet.';
   static const reportCardSubtitle = 'Logged maintenance snapshot';

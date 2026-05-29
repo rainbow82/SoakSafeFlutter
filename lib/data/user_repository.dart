@@ -41,6 +41,8 @@ class UserRepository {
     required String password,
     required int poolSizeGallons,
     required bool poolSaltWater,
+    int hotTubSizeGallons = 0,
+    bool hotTubSaltWater = false,
   }) async {
     final name = fullName.trim();
     final u = username.trim();
@@ -59,6 +61,8 @@ class UserRepository {
         poolSizeGallons: poolSizeGallons,
         poolSaltWater: poolSaltWater,
         poolAboveGround: false,
+        hotTubSizeGallons: hotTubSizeGallons,
+        hotTubSaltWater: hotTubSaltWater,
       ),
     );
     final created = await _db.userById(id);
@@ -97,6 +101,8 @@ class UserRepository {
       poolSizeGallons: poolSizeGallons,
       poolSaltWater: poolSaltWater,
       poolAboveGround: poolAboveGround,
+      hotTubSizeGallons: row.hotTubSizeGallons,
+      hotTubSaltWater: row.hotTubSaltWater,
     );
     await _db.updateUserProfile(updated);
     return (UpdateProfileResult.success, updated);
