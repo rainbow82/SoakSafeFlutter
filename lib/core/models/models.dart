@@ -1,3 +1,22 @@
+import 'package:soaksafe/core/constants/app_strings.dart';
+
+/// A maintainable water body. Checklists and saved events are scoped per
+/// target so pool and hot tub maintenance are tracked independently.
+enum MaintenanceTarget {
+  pool,
+  hotTub;
+
+  String get storageValue =>
+      this == MaintenanceTarget.hotTub ? 'HOT_TUB' : 'POOL';
+
+  String get label => this == MaintenanceTarget.hotTub
+      ? AppStrings.waterBodyHotTub
+      : AppStrings.waterBodyPool;
+
+  static MaintenanceTarget fromStorage(String? value) =>
+      value == 'HOT_TUB' ? MaintenanceTarget.hotTub : MaintenanceTarget.pool;
+}
+
 class EventLineItem {
   const EventLineItem(this.label, this.amount);
 
@@ -44,6 +63,7 @@ class UserRecord {
 class ChecklistRecord {
   ChecklistRecord({
     required this.userId,
+    this.target = MaintenanceTarget.pool,
     this.vacuum = false,
     this.cleanSkimmer = false,
     this.addWater = false,
@@ -56,6 +76,7 @@ class ChecklistRecord {
   });
 
   final int userId;
+  final MaintenanceTarget target;
   bool vacuum;
   bool cleanSkimmer;
   bool addWater;
@@ -74,6 +95,7 @@ class MaintenanceEventRecord {
     required this.eventType,
     required this.eventTimeMillis,
     required this.dateMillis,
+    this.target = MaintenanceTarget.pool,
     this.vacuum = false,
     this.cleanSkimmer = false,
     this.addWater = false,
@@ -88,6 +110,7 @@ class MaintenanceEventRecord {
   final int id;
   final int userId;
   final String eventType;
+  final MaintenanceTarget target;
   int eventTimeMillis;
   int dateMillis;
   bool vacuum;

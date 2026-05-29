@@ -13,7 +13,7 @@ class AppDatabase {
     if (_instance != null) return _instance!;
     final db = await openDatabase(
       join(path, 'soaksafe.db'),
-      version: 12,
+      version: 13,
       onUpgrade: (database, oldVersion, newVersion) async {
         if (oldVersion < 11) {
           await database.execute(
@@ -23,6 +23,44 @@ class AppDatabase {
         if (oldVersion < 12) {
           await database.execute(
             'ALTER TABLE users ADD COLUMN hot_tub_salt_water INTEGER NOT NULL DEFAULT 0',
+          );
+        }
+        if (oldVersion < 13) {
+          // Scope checklists and events per water body (pool / hot tub).
+          // The checklist primary key changes from (userId) to (userId, target),
+          // so the table is rebuilt; existing rows become the POOL checklist.
+          await database.execute('''
+            CREATE TABLE maintenance_checklist_v13 (
+              userId INTEGER NOT NULL,
+              target TEXT NOT NULL DEFAULT 'POOL',
+              vacuum INTEGER NOT NULL DEFAULT 0,
+              clean_skimmer INTEGER NOT NULL DEFAULT 0,
+              add_water INTEGER NOT NULL DEFAULT 0,
+              brush_walls INTEGER NOT NULL DEFAULT 0,
+              chlorine REAL NOT NULL DEFAULT 0,
+              ph_up REAL NOT NULL DEFAULT 0,
+              ph_down REAL NOT NULL DEFAULT 0,
+              no_phos REAL NOT NULL DEFAULT 0,
+              custom_lines_json TEXT,
+              PRIMARY KEY (userId, target),
+              FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
+            )
+          ''');
+          await database.execute('''
+            INSERT INTO maintenance_checklist_v13 (
+              userId, target, vacuum, clean_skimmer, add_water, brush_walls,
+              chlorine, ph_up, ph_down, no_phos, custom_lines_json
+            )
+            SELECT userId, 'POOL', vacuum, clean_skimmer, add_water, brush_walls,
+              chlorine, ph_up, ph_down, no_phos, custom_lines_json
+            FROM maintenance_checklist
+          ''');
+          await database.execute('DROP TABLE maintenance_checklist');
+          await database.execute(
+            'ALTER TABLE maintenance_checklist_v13 RENAME TO maintenance_checklist',
+          );
+          await database.execute(
+            "ALTER TABLE maintenance_events ADD COLUMN target TEXT NOT NULL DEFAULT 'POOL'",
           );
         }
       },
@@ -49,7 +87,8 @@ class AppDatabase {
         ''');
         await database.execute('''
           CREATE TABLE maintenance_checklist (
-            userId INTEGER PRIMARY KEY,
+            userId INTEGER NOT NULL,
+            target TEXT NOT NULL DEFAULT 'POOL',
             vacuum INTEGER NOT NULL DEFAULT 0,
             clean_skimmer INTEGER NOT NULL DEFAULT 0,
             add_water INTEGER NOT NULL DEFAULT 0,
@@ -59,6 +98,7 @@ class AppDatabase {
             ph_down REAL NOT NULL DEFAULT 0,
             no_phos REAL NOT NULL DEFAULT 0,
             custom_lines_json TEXT,
+            PRIMARY KEY (userId, target),
             FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
           )
         ''');
@@ -67,6 +107,7 @@ class AppDatabase {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             userId INTEGER NOT NULL,
             event_type TEXT NOT NULL,
+            target TEXT NOT NULL DEFAULT 'POOL',
             event_time_millis INTEGER NOT NULL,
             dateMillis INTEGER NOT NULL,
             vacuum INTEGER NOT NULL DEFAULT 0,
@@ -160,28 +201,32 @@ class AppDatabase {
     );
   }
 
-  Future<ChecklistRecord> getChecklistOrDefault(int userId) async {
+  Future<ChecklistRecord> getChecklistOrDefault(
+    int userId,
+    MaintenanceTarget target,
+  ) async {
     final rows = await _db.query(
       'maintenance_checklist',
-      where: 'userId = ?',
-      whereArgs: [userId],
+      where: 'userId = ? AND target = ?',
+      whereArgs: [userId, target.storageValue],
       limit: 1,
     );
-    if (rows.isEmpty) return ChecklistRecord(userId: userId);
+    if (rows.isEmpty) return ChecklistRecord(userId: userId, target: target);
     return _checklistFromRow(rows.first);
   }
 
   Future<MaintenanceEventRecord?> checklistSavedEventForDay(
     int userId,
     DateTime day,
+    MaintenanceTarget target,
   ) async {
     final dayStart = DateTime(day.year, day.month, day.day).millisecondsSinceEpoch;
     final dayEnd = dayStart + const Duration(days: 1).inMilliseconds;
     final rows = await _db.query(
       'maintenance_events',
       where:
-          'userId = ? AND event_type = ? AND event_time_millis >= ? AND event_time_millis < ?',
-      whereArgs: [userId, 'CHECKLIST_SAVED', dayStart, dayEnd],
+          'userId = ? AND event_type = ? AND target = ? AND event_time_millis >= ? AND event_time_millis < ?',
+      whereArgs: [userId, 'CHECKLIST_SAVED', target.storageValue, dayStart, dayEnd],
       orderBy: 'event_time_millis DESC, id DESC',
       limit: 1,
     );
@@ -194,6 +239,7 @@ class AppDatabase {
       'maintenance_checklist',
       {
         'userId': row.userId,
+        'target': row.target.storageValue,
         'vacuum': row.vacuum ? 1 : 0,
         'clean_skimmer': row.cleanSkimmer ? 1 : 0,
         'add_water': row.addWater ? 1 : 0,
@@ -283,6 +329,7 @@ class AppDatabase {
 
   ChecklistRecord _checklistFromRow(Map<String, Object?> row) => ChecklistRecord(
         userId: row['userId']! as int,
+        target: MaintenanceTarget.fromStorage(row['target'] as String?),
         vacuum: (row['vacuum']! as int) == 1,
         cleanSkimmer: (row['clean_skimmer']! as int) == 1,
         addWater: (row['add_water']! as int) == 1,
@@ -299,6 +346,7 @@ class AppDatabase {
         id: row['id']! as int,
         userId: row['userId']! as int,
         eventType: row['event_type']! as String,
+        target: MaintenanceTarget.fromStorage(row['target'] as String?),
         eventTimeMillis: row['event_time_millis']! as int,
         dateMillis: row['dateMillis']! as int,
         vacuum: (row['vacuum']! as int) == 1,
@@ -315,6 +363,7 @@ class AppDatabase {
   Map<String, Object?> _eventToMap(MaintenanceEventRecord event) => {
         'userId': event.userId,
         'event_type': event.eventType,
+        'target': event.target.storageValue,
         'event_time_millis': event.eventTimeMillis,
         'dateMillis': event.dateMillis,
         'vacuum': event.vacuum ? 1 : 0,

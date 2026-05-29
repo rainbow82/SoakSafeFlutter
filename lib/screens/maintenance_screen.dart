@@ -11,6 +11,7 @@ import 'package:soaksafe/core/models/models.dart';
 import 'package:soaksafe/core/theme/soaksafe_colors.dart';
 import 'package:soaksafe/core/utils/codecs.dart';
 import 'package:soaksafe/data/maintenance_repository.dart';
+import 'package:soaksafe/data/user_repository.dart';
 import 'package:soaksafe/widgets/frosted_card.dart';
 import 'package:soaksafe/widgets/pool_background.dart';
 import 'package:soaksafe/widgets/soaksafe_buttons.dart';
@@ -27,6 +28,9 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   List<CustomLineEntry> _customLines = [];
   bool _loading = true;
   File? _profileImage;
+  bool _hasPool = true;
+  bool _hasHotTub = false;
+  MaintenanceTarget _target = MaintenanceTarget.pool;
 
   @override
   void initState() {
@@ -47,14 +51,38 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     final app = context.read<AppState>();
     final userId = app.currentUserId;
     if (userId == null) return;
-    final checklist = await context.read<MaintenanceRepository>().loadChecklist(userId);
+    final userRepo = context.read<UserRepository>();
+    final maintRepo = context.read<MaintenanceRepository>();
+    final user = await userRepo.userById(userId);
+    final hasPool = (user?.poolSizeGallons ?? 0) > 0;
+    final hasHotTub = (user?.hotTubSizeGallons ?? 0) > 0;
+    // Default to pool when present, otherwise the only water body they have.
+    final target = hasPool ? MaintenanceTarget.pool : MaintenanceTarget.hotTub;
+    final checklist = await maintRepo.loadChecklist(userId, target);
     if (!mounted) return;
     setState(() {
+      _hasPool = hasPool;
+      _hasHotTub = hasHotTub;
+      _target = target;
       _checklist = checklist;
       _customLines = CustomLinesCodec.decode(checklist.customLinesJson);
       _loading = false;
     });
     await _loadProfileImage(userId);
+  }
+
+  Future<void> _switchTarget(MaintenanceTarget target) async {
+    if (target == _target) return;
+    final userId = context.read<AppState>().currentUserId;
+    if (userId == null) return;
+    final maintRepo = context.read<MaintenanceRepository>();
+    final checklist = await maintRepo.loadChecklist(userId, target);
+    if (!mounted) return;
+    setState(() {
+      _target = target;
+      _checklist = checklist;
+      _customLines = CustomLinesCodec.decode(checklist.customLinesJson);
+    });
   }
 
   Future<void> _logout() async {
@@ -230,14 +258,20 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(left: 4, bottom: 8),
-                        child: Text(
-                          date,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        padding: const EdgeInsets.only(left: 4, right: 4, bottom: 8),
+                        child: Row(
+                          children: [
+                            Text(
+                              date,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const Spacer(),
+                            if (_hasPool && _hasHotTub) _targetToggle(),
+                          ],
                         ),
                       ),
                       FrostedCard(
@@ -334,6 +368,49 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _targetToggle() {
+    return SegmentedButton<MaintenanceTarget>(
+      showSelectedIcon: false,
+      style: ButtonStyle(
+        visualDensity: VisualDensity.compact,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        padding: WidgetStateProperty.all(
+          const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        ),
+        textStyle: WidgetStateProperty.all(
+          const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+        ),
+        side: WidgetStateProperty.all(
+          const BorderSide(color: Colors.white70),
+        ),
+        backgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return SoakSafeColors.saveButton;
+          }
+          return Colors.white24;
+        }),
+        foregroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return SoakSafeColors.saveButtonText;
+          }
+          return Colors.white;
+        }),
+      ),
+      segments: const [
+        ButtonSegment(
+          value: MaintenanceTarget.pool,
+          label: Text(AppStrings.waterBodyPool),
+        ),
+        ButtonSegment(
+          value: MaintenanceTarget.hotTub,
+          label: Text(AppStrings.waterBodyHotTub),
+        ),
+      ],
+      selected: {_target},
+      onSelectionChanged: (s) => _switchTarget(s.first),
     );
   }
 

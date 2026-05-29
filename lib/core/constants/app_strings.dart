@@ -31,6 +31,8 @@ abstract final class AppStrings {
   static const hotTubSizeLabel = 'Hot tub size (gallons, optional)';
   static const poolTypeFresh = 'Fresh water';
   static const poolTypeSalt = 'Salt water';
+  static const waterBodyPool = 'Pool';
+  static const waterBodyHotTub = 'Hot tub';
   static const poolAboveGround = 'Above ground';
   static const poolInGround = 'In-ground';
   static const errorLoginEmpty = 'Enter your username and password.';

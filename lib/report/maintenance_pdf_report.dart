@@ -71,9 +71,8 @@ abstract final class MaintenancePdfReport {
               final time = rowTime.format(
                 DateTime.fromMillisecondsSinceEpoch(event.eventTimeMillis),
               );
-              final type = event.eventType.trim();
-              final typeSuffix = type.isEmpty ? '' : ' ($type)';
-              final snapshotLabel = '${AppStrings.reportCardSubtitle}$typeSuffix';
+              final snapshotLabel =
+                  '${event.target.label} — ${AppStrings.reportCardSubtitle}';
 
               widgets.add(_dataRow(
                 time,

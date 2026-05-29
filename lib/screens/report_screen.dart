@@ -63,7 +63,9 @@ class _ReportScreenState extends State<ReportScreen> {
     if (_query.trim().isEmpty) return _events;
     final q = _query.toLowerCase();
     return _events.where((e) {
-      final hay = StringBuffer()..write(e.eventType.toLowerCase());
+      final hay = StringBuffer()
+        ..write(e.eventType.toLowerCase())
+        ..write(' ${e.target.label.toLowerCase()}');
       for (final item in LineItemsCodec.resolveLineItems(e)) {
         hay.write(' ${item.label.toLowerCase()}');
         if (item.amount != null) hay.write(' ${item.amount}');
@@ -236,9 +238,12 @@ class _ReportScreenState extends State<ReportScreen> {
                             itemCount: _filtered.length,
                             itemBuilder: (context, index) {
                               final event = _filtered[index];
-                              final when = DateFormat('MM/dd/yyyy hh:mm a').format(
-                                DateTime.fromMillisecondsSinceEpoch(event.eventTimeMillis),
-                              );
+                              final eventTime =
+                                  DateTime.fromMillisecondsSinceEpoch(event.eventTimeMillis);
+                              final dateStr = DateFormat('MM/dd/yyyy').format(eventTime);
+                              final timeStr = DateFormat('hh:mm a').format(eventTime);
+                              final when =
+                                  '${event.target.label} - $dateStr - $timeStr';
                               final lines = LineItemsCodec.resolveLineItems(event);
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 12),

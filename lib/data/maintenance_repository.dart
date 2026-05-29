@@ -8,18 +8,22 @@ class MaintenanceRepository {
 
   final AppDatabase _db;
 
-  Future<ChecklistRecord> loadChecklist(int userId) =>
-      _db.getChecklistOrDefault(userId);
+  Future<ChecklistRecord> loadChecklist(
+    int userId,
+    MaintenanceTarget target,
+  ) =>
+      _db.getChecklistOrDefault(userId, target);
 
   Future<void> saveFullChecklist(int userId, ChecklistRecord checklist) async {
     final now = DateTime.now();
     final midnight = DateTime(now.year, now.month, now.day);
+    final target = checklist.target;
 
     await _db.upsertChecklist(checklist);
     await _db.upsertMaintenanceDate(userId, midnight.millisecondsSinceEpoch);
 
     final items = _checklistToLineItems(checklist);
-    final existing = await _db.checklistSavedEventForDay(userId, now);
+    final existing = await _db.checklistSavedEventForDay(userId, now, target);
     final eventTimeMillis = now.millisecondsSinceEpoch;
 
     if (existing != null) {
@@ -34,6 +38,7 @@ class MaintenanceRepository {
       id: 0,
       userId: userId,
       eventType: 'CHECKLIST_SAVED',
+      target: target,
       eventTimeMillis: eventTimeMillis,
       dateMillis: eventTimeMillis,
     );
